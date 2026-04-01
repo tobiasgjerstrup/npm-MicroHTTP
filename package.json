@@ -1,0 +1,32 @@
+{
+  "name": "@convoke/microhttp",
+  "version": "0.0.0",
+  "description": "A small wrapper for nodejs' http",
+  "homepage": "https://github.com/tobiasgjerstrup/npm-MicroHTTP#readme",
+  "bugs": {
+    "url": "https://github.com/tobiasgjerstrup/npm-MicroHTTP/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tobiasgjerstrup/npm-MicroHTTP.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch --experimental-transform-types src/main.ts",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "jiti": "^2.6.1",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.1"
+  }
+}
