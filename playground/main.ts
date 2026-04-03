@@ -1,4 +1,4 @@
-import microHTTP, { HTTPError, UrlNotFoundError } from './request.ts';
+import microHTTP, { HTTPError, UrlNotFoundError } from '../src/request.ts';
 
 try {
     const res = await microHTTP.get<{ userId: number; id: number; title: string; completed: boolean }>(
