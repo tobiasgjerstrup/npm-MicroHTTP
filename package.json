@@ -31,7 +31,7 @@
     "access": "public"
   },
   "scripts": {
-    "start": "node --watch --experimental-transform-types playground/main.ts",
+    "start": "cd playground && npm start",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest",
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
