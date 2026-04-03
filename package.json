@@ -1,5 +1,5 @@
 {
-  "name": "@convoke/microhttp",
+  "name": "@tobiasgjerstrup/microhttp",
   "version": "0.0.0",
   "description": "A small wrapper for nodejs' http",
   "homepage": "https://github.com/tobiasgjerstrup/npm-MicroHTTP#readme",
@@ -17,7 +17,8 @@
   "scripts": {
     "start": "node --watch --experimental-transform-types src/main.ts",
     "lint": "eslint . --max-warnings=0",
-    "test": "vitest"
+    "test": "vitest",
+    "build": "tsc"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

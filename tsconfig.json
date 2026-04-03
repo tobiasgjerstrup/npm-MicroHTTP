@@ -2,6 +2,7 @@
     "compilerOptions": {
         "target": "ES2024",
         "module": "NodeNext",
+        "types": ["node"],
         "outDir": "./dist",
         "rootDir": "./src",
         "lib": ["ES7", "DOM"],
@@ -9,7 +10,9 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "allowImportingTsExtensions": true,
+        "rewriteRelativeImportExtensions": true
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.spec.ts"]
