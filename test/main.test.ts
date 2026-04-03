@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import microhttp, { HTTPError } from '../src/index.ts';
+import microhttp, { HTTPError, UrlNotFoundError } from '../src/index.ts';
 
 describe('Basic GET Request', async () => {
     const res = await microhttp.get('https://www.google.com');
@@ -33,5 +33,24 @@ describe('GET Request to non-existing page', async () => {
 
     it('Request gives 404 Not Found', async () => {
         expect(res.status).toBe(404);
+    });
+});
+
+describe('GET Request to non-existing domain', async () => {
+    let res = null;
+    try {
+        await microhttp.get('https://www.google.com.non-existing-domain');
+    } catch (error: unknown) {
+        if (!(error instanceof UrlNotFoundError)) {
+            throw error;
+        }
+        res = error;
+    }
+    if (!res) {
+        throw new Error('Error is null or undefined');
+    }
+
+    it ('Request gives UrlNotFoundError', async () => {
+        expect(res).toBeInstanceOf(UrlNotFoundError);
     });
 });
