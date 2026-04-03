@@ -1,0 +1,15 @@
+src/
+test/
+.git/
+.gitignore
+.npmrc
+.prettierrc
+eslint.config.ts
+tsconfig.eslint.json
+tsconfig.json
+package-lock.json
+*.test.ts
+*.spec.ts
+node_modules/
+coverage/
+.vscode/

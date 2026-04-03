@@ -1,6 +1,6 @@
 {
   "name": "@tobiasgjerstrup/microhttp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A small wrapper for nodejs' http",
   "homepage": "https://github.com/tobiasgjerstrup/npm-MicroHTTP#readme",
   "bugs": {
@@ -11,14 +11,31 @@
     "url": "git+https://github.com/tobiasgjerstrup/npm-MicroHTTP.git"
   },
   "license": "ISC",
-  "author": "",
+  "author": "Tobias Gjerstrup",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "start": "node --watch --experimental-transform-types src/main.ts",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build && npm run lint && npm run test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
