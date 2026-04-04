@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
-    { ignores: ['eslint.config.ts', 'dist/**', '**/*.js'] },
+    { ignores: ['eslint.config.ts', 'dist/**', 'playground/**', '**/*.js'] },
     {
         files: ['**/*.ts'],
         languageOptions: {

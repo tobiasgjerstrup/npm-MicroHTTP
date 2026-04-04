@@ -1,6 +1,6 @@
 # MicroHTTP
 
-A small, lightweight wrapper around Node.js's built-in `http` and `https` modules for making HTTP requests.
+A small, lightweight, zero-dependency wrapper around Node.js's built-in `http` and `https` modules for making HTTP requests.
 
 ## Installation
 

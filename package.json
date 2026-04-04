@@ -1,6 +1,6 @@
 {
   "name": "@tobiasgjerstrup/microhttp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A small wrapper for nodejs' http",
   "homepage": "https://github.com/tobiasgjerstrup/npm-MicroHTTP#readme",
   "bugs": {
