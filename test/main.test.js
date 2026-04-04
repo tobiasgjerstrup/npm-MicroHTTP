@@ -26,8 +26,9 @@ beforeAll(async () => {
                     body += chunk;
                 });
                 req.on('end', () => {
+                    const parsedBody = JSON.parse(body);
                     res.statusCode = 200;
-                    res.end(JSON.stringify({ message: 'received', body, headers: req.headers }));
+                    res.end(JSON.stringify({ message: 'received', body: parsedBody, headers: req.headers }));
                 });
             } else {
                 res.statusCode = 404;
@@ -128,8 +129,9 @@ describe('POST Request with body', () => {
             headers: { 'Custom-Header': 'CustomValue' },
         });
 
+        console.log(res.body);
         expect(res.body.headers['custom-header']).toBe('CustomValue');
-        expect(res.body.body).toBe(JSON.stringify({ name: 'John Doe', age: 30 }));
+        expect(res.body.body).toEqual({ name: 'John Doe', age: 30 });
         expect(res.status).toBe(200);
     });
 });
