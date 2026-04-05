@@ -36,7 +36,7 @@ function request<T>(method: string, url: string, options: RequestOptions = {}): 
         const isHttps = parsed.protocol === 'https:';
         const transport = isHttps ? https : http;
 
-        let bodyData = options.body !== undefined ? typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body : undefined;
+        const bodyData = options.body !== undefined ? typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body : undefined;
 
         const reqOptions: http.RequestOptions = {
             hostname: parsed.hostname,
