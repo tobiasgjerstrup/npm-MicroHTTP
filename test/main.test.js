@@ -1,5 +1,7 @@
 import * as http from 'node:http';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import nodeHttp from 'node:http';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import createApp from '@tobiasgjerstrup/microhttp-server';
 import microhttp, { HTTPError, UrlNotFoundError } from '../src/index.ts';
 
 /** @type {import('node:http').Server} */
@@ -9,33 +11,35 @@ let server;
 let baseUrl;
 
 beforeAll(async () => {
-    await new Promise((resolve) => {
-        /** @param {import('node:http').IncomingMessage} req
-         *  @param {import('node:http').ServerResponse} res
-         */
-        server = http.createServer((req, res) => {
-            res.setHeader('Content-Type', 'application/json');
+    const app = createApp();
+    const originalCreateServer = nodeHttp.createServer.bind(nodeHttp);
 
-            if (req.url === '/ok') {
-                res.statusCode = 200;
-                res.end(JSON.stringify({ message: 'ok' }));
-            } else if (req.url === '/return-body-and-headers' && req.method === 'POST') {
-                let body = '';
-                /** @param {Buffer} chunk */
-                req.on('data', (chunk) => {
-                    body += chunk;
-                });
-                req.on('end', () => {
-                    const parsedBody = JSON.parse(body);
-                    res.statusCode = 200;
-                    res.end(JSON.stringify({ message: 'received', body: parsedBody, headers: req.headers }));
-                });
-            } else {
-                res.statusCode = 404;
-                res.end(JSON.stringify({ message: 'not found' }));
+    app.get('/ok', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ message: 'ok' }));
+    });
+
+    app.post('/return-body-and-headers', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        console.log(req.body)
+        res.end(JSON.stringify({ message: 'received', body: req.body, headers: req.headers }));
+    });
+
+    const createServerSpy = vi.spyOn(nodeHttp, 'createServer').mockImplementation((...args) => {
+        server = originalCreateServer(...args);
+        return server;
+    });
+
+    await new Promise((resolve, reject) => {
+        app.listen(0, '127.0.0.1', () => {
+            createServerSpy.mockRestore();
+
+            if (!server) {
+                reject(new Error('Failed to capture internal server instance'));
+                return;
             }
-        });
-        server.listen(0, '127.0.0.1', () => {
+
             const addr = /** @type {import('node:net').AddressInfo} */ (server.address());
             baseUrl = `http://127.0.0.1:${addr.port}`;
             resolve();
@@ -44,6 +48,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    if (!server) {
+        return;
+    }
+
     await new Promise((resolve, reject) => {
         server.close((err) => (err ? reject(err) : resolve()));
     });
