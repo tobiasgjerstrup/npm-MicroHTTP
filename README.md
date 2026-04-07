@@ -24,6 +24,14 @@ const postResponse = await microHTTP.post('https://api.example.com/data', {
   body: { name: 'John', age: 30 }
 });
 
+// GET with Basic Auth
+const authResponse = await microHTTP.get('https://api.example.com/protected', {
+  basicAuth: {
+    username: 'john',
+    password: 'secret'
+  }
+});
+
 // PUT request
 const putResponse = await microHTTP.put('https://api.example.com/data/1', {
   body: { name: 'Jane' }
@@ -69,6 +77,11 @@ All methods return a `Promise<Response<T>>` where `Response` contains:
 interface RequestOptions {
   headers?: Record<string, string>;
   body?: unknown;  // Will be JSON stringified
+  ignoreLocalIssuerCertificate?: boolean; // HTTPS only: sets rejectUnauthorized to false
+  basicAuth?: {
+    username: string;
+    password: string;
+  };
 }
 ```
 

@@ -20,6 +20,12 @@ beforeAll(async () => {
         res.end(JSON.stringify({ message: 'ok' }));
     });
 
+    app.get('/echo-headers', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.statusCode = 200;
+        res.end(JSON.stringify({ headers: req.headers }));
+    });
+
     app.post('/return-body-and-headers', (req, res) => {
         res.setHeader('Content-Type', 'application/json');
         console.log(req.body)
@@ -141,5 +147,34 @@ describe('POST Request with body', () => {
         expect(res.body.headers['custom-header']).toBe('CustomValue');
         expect(res.body.body).toEqual({ name: 'John Doe', age: 30 });
         expect(res.status).toBe(200);
+    });
+});
+
+describe('Basic Auth', () => {
+    it('sends basic auth header', async () => {
+        const res = await microhttp.get(`${baseUrl}/echo-headers`, {
+            basicAuth: {
+                username: 'john',
+                password: 'secret',
+            },
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.body.headers.authorization).toBe('Basic am9objpzZWNyZXQ=');
+    });
+
+    it('prefers explicit authorization header over basicAuth option', async () => {
+        const res = await microhttp.get(`${baseUrl}/echo-headers`, {
+            basicAuth: {
+                username: 'john',
+                password: 'secret',
+            },
+            headers: {
+                Authorization: 'Bearer token-123',
+            },
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.body.headers.authorization).toBe('Bearer token-123');
     });
 });

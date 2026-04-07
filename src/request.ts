@@ -22,6 +22,11 @@ export class UrlNotFoundError extends Error {
 export interface RequestOptions {
     headers?: Record<string, string>;
     body?: unknown;
+    ignoreLocalIssuerCertificate?: boolean;
+    basicAuth?: {
+        username: string;
+        password: string;
+    };
 }
 
 export interface Response<T = unknown> {
@@ -35,6 +40,10 @@ function request<T>(method: string, url: string, options: RequestOptions = {}): 
         const parsed = new URL(url);
         const isHttps = parsed.protocol === 'https:';
         const transport = isHttps ? https : http;
+        const hasAuthorizationHeader = Object.keys(options.headers ?? {}).some((header) => header.toLowerCase() === 'authorization');
+        const basicAuthHeader = options.basicAuth && !hasAuthorizationHeader
+            ? `Basic ${Buffer.from(`${options.basicAuth.username}:${options.basicAuth.password}`).toString('base64')}`
+            : undefined;
 
         const bodyData = options.body !== undefined ? typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body : undefined;
 
@@ -45,12 +54,14 @@ function request<T>(method: string, url: string, options: RequestOptions = {}): 
             method,
             headers: {
                 Accept: 'application/json',
+                ...(basicAuthHeader !== undefined && { Authorization: basicAuthHeader }),
                 ...options.headers,
                 ...(bodyData !== undefined && {
                     'Content-Type': 'application/json',
                     'Content-Length': Buffer.byteLength(bodyData).toString(),
                 }),
             },
+            ...(isHttps && options.ignoreLocalIssuerCertificate ? { rejectUnauthorized: false } : {}),
         };
 
         const req = transport.request(reqOptions, (res) => {
