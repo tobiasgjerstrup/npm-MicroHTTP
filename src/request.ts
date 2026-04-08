@@ -13,7 +13,10 @@ export class HTTPError extends Error {
 }
 
 export class UrlNotFoundError extends Error {
-    constructor(public readonly url: string, public readonly cause?: unknown) {
+    constructor(
+        public readonly url: string,
+        public readonly cause?: unknown,
+    ) {
         super(`URL not found: ${url}`);
         this.name = 'UrlNotFoundError';
     }
@@ -22,11 +25,26 @@ export class UrlNotFoundError extends Error {
 export interface RequestOptions {
     headers?: Record<string, string>;
     body?: unknown;
+    /**
+     * Whether to ignore local issuer certificate errors when making HTTPS requests. This is useful for testing against servers with self-signed certificates. Use with caution in production environments.
+     */
     ignoreLocalIssuerCertificate?: boolean;
+    /**
+     * Basic authentication credentials, used to set the Authorization header if not already provided in the headers option.
+     */
     basicAuth?: {
         username: string;
         password: string;
     };
+    /**
+     * The content type of the request body, used to set the Content-Type header. Defaults to 'application/json' if body is an object and not a string.
+     */
+    contentType?: string;
+    /**
+     * The expected response content type, used to set the Accept header. Defaults to 'application/json'.
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept
+     */
+    acceptType?: string;
 }
 
 export interface Response<T = unknown> {
@@ -35,29 +53,52 @@ export interface Response<T = unknown> {
     body: T;
 }
 
+type WritableBody = string | Buffer;
+
 function request<T>(method: string, url: string, options: RequestOptions = {}): Promise<Response<T>> {
     return new Promise((resolve, reject) => {
+        options.acceptType = options.acceptType ?? 'application/json';
+        options.contentType = options.contentType ?? 'application/json';
         const parsed = new URL(url);
         const isHttps = parsed.protocol === 'https:';
         const transport = isHttps ? https : http;
-        const hasAuthorizationHeader = Object.keys(options.headers ?? {}).some((header) => header.toLowerCase() === 'authorization');
-        const basicAuthHeader = options.basicAuth && !hasAuthorizationHeader
-            ? `Basic ${Buffer.from(`${options.basicAuth.username}:${options.basicAuth.password}`).toString('base64')}`
-            : undefined;
+        const hasAuthorizationHeader = Object.keys(options.headers ?? {}).some(
+            (header) => header.toLowerCase() === 'authorization',
+        );
+        const basicAuthHeader =
+            options.basicAuth && !hasAuthorizationHeader
+                ? `Basic ${Buffer.from(`${options.basicAuth.username}:${options.basicAuth.password}`).toString('base64')}`
+                : undefined;
 
-        const bodyData = options.body !== undefined ? typeof options.body !== 'string' ? JSON.stringify(options.body) : options.body : undefined;
-
+        let bodyData: WritableBody | undefined;
+        if (options.contentType === 'application/json') {
+            bodyData = options.body !== undefined
+                ? typeof options.body !== 'string'
+                    ? JSON.stringify(options.body)
+                    : options.body
+                : undefined;
+        } else {
+            if (typeof options.body === 'string') {
+                bodyData = options.body;
+            } else if (options.body instanceof URLSearchParams) {
+                bodyData = options.body.toString();
+            } else if (options.body instanceof ArrayBuffer) {
+                bodyData = Buffer.from(options.body);
+            } else if (ArrayBuffer.isView(options.body)) {
+                bodyData = Buffer.from(options.body.buffer, options.body.byteOffset, options.body.byteLength);
+            }
+        }
         const reqOptions: http.RequestOptions = {
             hostname: parsed.hostname,
             port: parsed.port || (isHttps ? 443 : 80),
             path: parsed.pathname + parsed.search,
             method,
             headers: {
-                Accept: 'application/json',
+                Accept: options.acceptType,
                 ...(basicAuthHeader !== undefined && { Authorization: basicAuthHeader }),
                 ...options.headers,
                 ...(bodyData !== undefined && {
-                    'Content-Type': 'application/json',
+                    'Content-Type': options.contentType ?? 'application/json',
                     'Content-Length': Buffer.byteLength(bodyData).toString(),
                 }),
             },

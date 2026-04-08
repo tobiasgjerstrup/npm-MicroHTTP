@@ -1,4 +1,3 @@
-import * as http from 'node:http';
 import nodeHttp from 'node:http';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import createApp from '@tobiasgjerstrup/microhttp-server';
@@ -27,8 +26,13 @@ beforeAll(async () => {
     });
 
     app.post('/return-body-and-headers', (req, res) => {
-        res.setHeader('Content-Type', 'application/json');
-        console.log(req.body)
+        res.statusCode = 200;
+        req.headers['accept'] = req.headers['accept'] ?? 'application/json';
+
+        res.setHeader('content-type', req.headers['accept']);
+        if (req.body instanceof URLSearchParams) {
+            req.body = req.body.toString();
+        }
         res.end(JSON.stringify({ message: 'received', body: req.body, headers: req.headers }));
     });
 
@@ -143,7 +147,6 @@ describe('POST Request with body', () => {
             headers: { 'Custom-Header': 'CustomValue' },
         });
 
-        console.log(res.body);
         expect(res.body.headers['custom-header']).toBe('CustomValue');
         expect(res.body.body).toEqual({ name: 'John Doe', age: 30 });
         expect(res.status).toBe(200);
@@ -176,5 +179,33 @@ describe('Basic Auth', () => {
 
         expect(res.status).toBe(200);
         expect(res.body.headers.authorization).toBe('Bearer token-123');
+    });
+});
+
+describe('Content-Type and Accept headers', () => {
+    it('sets Content-Type header based on contentType option', async () => {
+        const res = await microhttp.post(`${baseUrl}/return-body-and-headers`, {
+            body: 'Hello, world!"},',
+            contentType: 'text/plain',
+            acceptType: 'application/www-form-urlencoded',
+        });
+        const parsedBody = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+
+        expect(parsedBody.headers['content-type']).toBe('text/plain');
+        expect(parsedBody.headers['accept']).toBe('application/www-form-urlencoded');
+        expect(res.headers['content-type']).toBe('application/www-form-urlencoded');
+        expect(parsedBody.body).toBe('Hello, world!"},');
+    });
+});
+
+describe('x-www-form-urlencoded content type', () => {
+    it('sends form data correctly', async () => {
+        const res = await microhttp.post(`${baseUrl}/return-body-and-headers`, {
+            body: new URLSearchParams({ name: 'John Doe', age: '30' }),
+            contentType: 'application/x-www-form-urlencoded',
+            acceptType: 'text/plain'
+        });
+        const parsedBody = typeof res.body === 'string' ? JSON.parse(res.body) : res.body;
+        expect(parsedBody.body).toBe('name=John+Doe&age=30');
     });
 });
