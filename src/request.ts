@@ -1,7 +1,15 @@
 import http from 'node:http';
 import https from 'node:https';
 
+/**
+ * Error thrown when a request completes with a non-2xx HTTP status code.
+ */
 export class HTTPError extends Error {
+    /**
+     * @param status HTTP status code returned by the server.
+     * @param body Parsed response body returned by the server.
+     * @param headers Response headers returned by the server.
+     */
     constructor(
         public readonly status: number,
         public readonly body: unknown,
@@ -12,7 +20,14 @@ export class HTTPError extends Error {
     }
 }
 
+/**
+ * Error thrown when the URL hostname cannot be resolved.
+ */
 export class UrlNotFoundError extends Error {
+    /**
+     * @param url URL that could not be resolved.
+     * @param cause Original low-level error.
+     */
     constructor(
         public readonly url: string,
         public readonly cause?: unknown,
@@ -22,13 +37,25 @@ export class UrlNotFoundError extends Error {
     }
 }
 
+/**
+ * Options shared by all request methods.
+ */
 export interface RequestOptions {
+    /**
+     * Additional request headers.
+     */
     headers?: Record<string, string>;
+
+    /**
+     * Request payload. Non-string values are JSON-stringified when contentType is application/json.
+     */
     body?: unknown;
+
     /**
      * Whether to ignore local issuer certificate errors when making HTTPS requests. This is useful for testing against servers with self-signed certificates. Use with caution in production environments.
      */
     ignoreLocalIssuerCertificate?: boolean;
+
     /**
      * Basic authentication credentials, used to set the Authorization header if not already provided in the headers option.
      */
@@ -36,10 +63,12 @@ export interface RequestOptions {
         username: string;
         password: string;
     };
+
     /**
      * The content type of the request body, used to set the Content-Type header. Defaults to 'application/json' if body is an object and not a string.
      */
     contentType?: string;
+
     /**
      * The expected response content type, used to set the Accept header. Defaults to 'application/json'.
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Accept
@@ -47,9 +76,25 @@ export interface RequestOptions {
     acceptType?: string;
 }
 
+/**
+ * Normalized response returned by MicroHTTP.
+ *
+ * @typeParam T Type of the parsed response body.
+ */
 export interface Response<T = unknown> {
+    /**
+     * HTTP status code.
+     */
     status: number;
+
+    /**
+     * Response headers.
+     */
     headers: Record<string, string | string[]>;
+
+    /**
+     * Parsed response body.
+     */
     body: T;
 }
 
@@ -144,12 +189,56 @@ function request<T>(method: string, url: string, options: RequestOptions = {}): 
 }
 
 const microHTTP = {
+    /**
+     * Send an HTTP GET request.
+     *
+     * @typeParam T Expected response body type.
+     * @param url Absolute request URL.
+     * @param options Optional request options (without body for GET).
+     * @returns The parsed response.
+     * @throws {HTTPError} The server responds with a non-2xx status code.
+     * @throws {UrlNotFoundError} The URL hostname cannot be resolved.
+     * @throws {Error} Any other low-level transport, TLS, or request error.
+     */
     get: <T = unknown>(url: string, options?: Omit<RequestOptions, 'body'>) => request<T>('GET', url, options),
 
+    /**
+     * Send an HTTP POST request.
+     *
+     * @typeParam T Expected response body type.
+     * @param url Absolute request URL.
+     * @param options Optional request options.
+     * @returns The parsed response.
+     * @throws {HTTPError} The server responds with a non-2xx status code.
+     * @throws {UrlNotFoundError} The URL hostname cannot be resolved.
+     * @throws {Error} Any other low-level transport, TLS, or request error.
+     */
     post: <T = unknown>(url: string, options?: RequestOptions) => request<T>('POST', url, options),
 
+    /**
+     * Send an HTTP PUT request.
+     *
+     * @typeParam T Expected response body type.
+     * @param url Absolute request URL.
+     * @param options Optional request options.
+     * @returns The parsed response.
+     * @throws {HTTPError} The server responds with a non-2xx status code.
+     * @throws {UrlNotFoundError} The URL hostname cannot be resolved.
+     * @throws {Error} Any other low-level transport, TLS, or request error.
+     */
     put: <T = unknown>(url: string, options?: RequestOptions) => request<T>('PUT', url, options),
 
+    /**
+     * Send an HTTP DELETE request.
+     *
+     * @typeParam T Expected response body type.
+     * @param url Absolute request URL.
+     * @param options Optional request options.
+     * @returns The parsed response.
+     * @throws {HTTPError} The server responds with a non-2xx status code.
+     * @throws {UrlNotFoundError} The URL hostname cannot be resolved.
+     * @throws {Error} Any other low-level transport, TLS, or request error.
+     */
     del: <T = unknown>(url: string, options?: RequestOptions) => request<T>('DELETE', url, options),
 };
 

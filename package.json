@@ -1,6 +1,6 @@
 {
   "name": "@tobiasgjerstrup/microhttp",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A small wrapper for nodejs' http",
   "homepage": "https://github.com/tobiasgjerstrup/npm-MicroHTTP#readme",
   "bugs": {
@@ -39,14 +39,14 @@
     "prepublishOnly": "npm run build && npm run lint && npm run test"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "10.0.1",
     "@tobiasgjerstrup/microhttp-server": "1.2.0",
-    "@types/node": "^25.5.0",
-    "eslint": "^10.1.0",
-    "globals": "^17.4.0",
-    "jiti": "^2.6.1",
-    "typescript": "~6.0.0",
-    "typescript-eslint": "^8.58.0",
-    "vitest": "^4.1.1"
+    "@types/node": "25.6.0",
+    "eslint": "10.2.0",
+    "globals": "17.5.0",
+    "jiti": "2.6.1",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.58.2",
+    "vitest": "4.1.4"
   }
 }
